@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mon Bulletin</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+<body style="text-align:center; font-family:sans-serif; padding:20px;">
+  <h1>Consulter votre bulletin</h1>
+
+  <!-- Entrée manuelle -->
+  <p>Entrez votre numéro ID :</p>
+  <input type="text" id="studentId" placeholder="Numéro ID" />
+  <button onclick="ouvrirBulletin()">Voir le bulletin</button>
+
+  <hr style="margin: 30px 0;" />
+
+  <!-- Scanner QR Code -->
+  <p>Ou scannez le QR code :</p>
+  <div id="qr-reader" style="width:300px; margin:auto;"></div>
+
+  <script>
+    function ouvrirBulletin() {
+      const id = document.getElementById("studentId").value.trim();
+      if (id) {
+        window.open("pdf/" + id + ".pdf", "_blank");
+      } else {
+        alert("Veuillez entrer un numéro ID");
+      }
+    }
+
+    // Fonction pour scanner le QR code
+    function onScanSuccess(decodedText, decodedResult) {
+      console.log("QR Code détecté : " + decodedText);
+      window.open(decodedText, "_blank");
+    }
+
+    // Lancement du lecteur QR Code
+    const html5QrCode = new Html5Qrcode("qr-reader");
+    html5QrCode.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: 250
+      },
+      onScanSuccess
+    ).catch(err => {
+      console.error("Erreur caméra : ", err);
+    });
+  </script>
+</body>
+</html>

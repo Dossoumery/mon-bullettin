@@ -24,7 +24,8 @@
     function ouvrirBulletin() {
       const id = document.getElementById("studentId").value.trim();
       if (id) {
-        window.open("pdf/" + id + ".pdf", "_blank");
+        // ✅ On enlève "pdf/" car les fichiers sont à la racine du dépôt
+        window.open(id + ".pdf", "_blank");
       } else {
         alert("Veuillez entrer un numéro ID");
       }

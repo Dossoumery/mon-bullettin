@@ -2,52 +2,318 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mon Bulletin</title>
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-</head>
-<body style="text-align:center; font-family:sans-serif; padding:20px;">
-  <h1>Consulter votre bulletin</h1>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carte de Supporter</title>
 
-  <!-- Entrée manuelle -->
-  <p>Entrez votre numéro ID :</p>
-  <input type="text" id="studentId" placeholder="Numéro ID" />
-  <button onclick="ouvrirBulletin()">Voir le bulletin</button>
+  <!-- Police -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
-  <hr style="margin: 30px 0;" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-  <!-- Scanner QR Code -->
-  <p>Ou scannez le QR code :</p>
-  <div id="qr-reader" style="width:300px; margin:auto;"></div>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(-45deg, #f0f0f0, #dce3ff, #f0f0f0);
+      background-size: 400% 400%;
+      animation: gradientMove 12s ease infinite;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-  <script>
-    function ouvrirBulletin() {
-      const id = document.getElementById("studentId").value.trim();
-      if (id) {
-        // ✅ On enlève "pdf/" car les fichiers sont à la racine du dépôt
-        window.open(id + ".pdf", "_blank");
-      } else {
-        alert("Veuillez entrer un numéro ID");
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    h2 {
+      font-size: 28px;
+      color: #002f6c;
+      margin-bottom: 20px;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    form#cardForm {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+      max-width: 600px;
+      width: 100%;
+      margin: 0 auto 40px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    form label {
+      display: block;
+      margin: 15px 0 5px;
+      font-weight: bold;
+      color: #002f6c;
+    }
+
+    form input, form select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      transition: 0.3s;
+    }
+
+    form input:focus, form select:focus {
+      border-color: #00aaff;
+      box-shadow: 0 0 8px rgba(0, 170, 255, 0.4);
+    }
+
+    form button {
+      background-color: #0077cc;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      margin-top: 20px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+      transition: 0.3s;
+    }
+
+    form button:hover {
+      background-color: #005fa3;
+      transform: scale(1.03);
+      box-shadow: 0 0 10px rgba(0, 170, 255, 0.4);
+    }
+
+    .card {
+      width: 600px;
+      height: 300px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      display: flex;
+      padding: 20px;
+      position: relative;
+      transition: 0.3s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    .left-section {
+      margin-right: 20px;
+    }
+
+    .left-section img {
+      width: 130px;
+      height: 130px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    .right-section {
+      flex: 1;
+    }
+
+    .club-name {
+      font-size: 22px;
+      font-weight: bold;
+      color: #002f6c;
+      background: #ffd700;
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
+    }
+
+    .info {
+      margin-top: 10px;
+    }
+
+    .info b {
+      display: inline-block;
+      width: 130px;
+    }
+
+    .club-logo {
+      position: absolute;
+      right: 20px;
+      top: 80px;
+      width: 100px;
+      height: auto;
+    }
+
+    .qr-code {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+    }
+
+    #downloadBtn {
+      display: none;
+      background-color: #28a745;
+      margin-top: 20px;
+      padding: 10px 25px;
+      border-radius: 8px;
+      color: white;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    #downloadBtn:hover {
+      background-color: #218838;
+      box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+    }
+
+    @media (max-width: 700px) {
+      .card {
+        flex-direction: column;
+        height: auto;
+        width: 100%;
+      }
+
+      .club-logo, .qr-code {
+        position: static;
+        margin-top: 10px;
+      }
+
+      .club-name {
+        font-size: 18px;
       }
     }
+  </style>
+</head>
+<body>
 
-    // Fonction pour scanner le QR code
-    function onScanSuccess(decodedText, decodedResult) {
-      console.log("QR Code détecté : " + decodedText);
-      window.open(decodedText, "_blank");
-    }
+  <h2>🎟️ Génère ta carte de supporter</h2>
 
-    // Lancement du lecteur QR Code
-    const html5QrCode = new Html5Qrcode("qr-reader");
-    html5QrCode.start(
-      { facingMode: "environment" },
-      {
-        fps: 10,
-        qrbox: 250
+  <form id="cardForm">
+    <label>Nom :</label>
+    <input type="text" id="name" required>
+
+    <label>Date de naissance :</label>
+    <input type="date" id="dob" required>
+
+    <label>Nationalité :</label>
+    <input type="text" id="nationality" required>
+
+    <label>Membre depuis :</label>
+    <input type="number" id="memberSince" required>
+
+    <label>ID de membre :</label>
+    <input type="text" id="memberId" required>
+
+    <label>Photo de profil :</label>
+    <input type="file" id="photo" accept="image/*" required>
+
+    <label>Club :</label>
+    <select id="club">
+      <option value="real">Real Madrid</option>
+      <option value="barca">FC Barcelona</option>
+      <option value="city">Man City</option>
+      <option value="united">Man United</option>
+    </select>
+
+    <button type="submit">Générer la carte</button>
+  </form>
+
+  <div class="card" id="cardPreview" style="margin-top: 20px; display: none;">
+    <div class="left-section">
+      <img id="photoPreview" src="" alt="Photo">
+    </div>
+    <div class="right-section">
+      <div class="club-name" id="clubName">CLUB</div>
+      <div class="info"><b>Nom:</b> <span id="nameField"></span></div>
+      <div class="info"><b>Date de naissance:</b> <span id="dobField"></span></div>
+      <div class="info"><b>Nationalité:</b> <span id="natField"></span></div>
+      <div class="info"><b>Membre depuis:</b> <span id="memberField"></span></div>
+      <div class="info"><b>ID:</b> <span id="idField"></span></div>
+    </div>
+    <img class="club-logo" id="clubLogo" src="">
+    <img class="qr-code" id="qrCode" src="">
+  </div>
+
+  <button id="downloadBtn">📥 Télécharger la carte</button>
+
+  <script>
+    const clubs = {
+      real: {
+        name: "REAL MADRID C.F.",
+        logo: "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg",
+        qr: "https://api.qrserver.com/v1/create-qr-code/?data=https://www.realmadrid.com&size=100x100",
+        color: "#ffd700",
       },
-      onScanSuccess
-    ).catch(err => {
-      console.error("Erreur caméra : ", err);
+      barca: {
+        name: "FC BARCELONA",
+        logo: "https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg",
+        qr: "https://api.qrserver.com/v1/create-qr-code/?data=https://www.fcbarcelona.com&size=100x100",
+        color: "#A50044",
+      },
+      city: {
+        name: "MANCHESTER CITY",
+        logo: "https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg",
+        qr: "https://api.qrserver.com/v1/create-qr-code/?data=https://www.mancity.com&size=100x100",
+        color: "#6CABDD",
+      },
+      united: {
+        name: "MANCHESTER UNITED",
+        logo: "https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg",
+        qr: "https://api.qrserver.com/v1/create-qr-code/?data=https://www.manutd.com&size=100x100",
+        color: "#DA291C",
+      },
+    };
+
+    document.getElementById("cardForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const clubKey = document.getElementById("club").value;
+      const club = clubs[clubKey];
+
+      document.getElementById("clubName").textContent = club.name;
+      document.getElementById("clubName").style.background = club.color;
+      document.getElementById("clubLogo").src = club.logo;
+      document.getElementById("qrCode").src = club.qr;
+
+      document.getElementById("nameField").textContent = document.getElementById("name").value;
+      document.getElementById("dobField").textContent = document.getElementById("dob").value;
+      document.getElementById("natField").textContent = document.getElementById("nationality").value;
+      document.getElementById("memberField").textContent = document.getElementById("memberSince").value;
+      document.getElementById("idField").textContent = document.getElementById("memberId").value;
+
+      const photoFile = document.getElementById("photo").files[0];
+      if (photoFile) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          document.getElementById("photoPreview").src = event.target.result;
+        };
+        reader.readAsDataURL(photoFile);
+      }
+
+      document.getElementById("cardPreview").style.display = "flex";
+      document.getElementById("downloadBtn").style.display = "inline-block";
+    });
+
+    document.getElementById("downloadBtn").addEventListener("click", function () {
+      const card = document.getElementById("cardPreview");
+      html2canvas(card).then(function (canvas) {
+        const link = document.createElement("a");
+        link.download = "carte_supporter.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      });
     });
   </script>
 </body>
